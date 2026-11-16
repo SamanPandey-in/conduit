@@ -1,0 +1,525 @@
+@import "tailwindcss";
+
+/*
+ * Conduit design tokens. See ../DESIGN.md.
+ * Concept: governed light through glass. Cool-white canvas, ink text,
+ * hairline rules; amber is the brand accent (and the HELD FOR APPROVAL
+ * state), cobalt is secondary and mostly image-borne. Green and red are
+ * reserved for allow / deny.
+ *
+ * Kit contract (login, onboarding, /app, legal, 404): bg, surface, line,
+ * muted, fg, accent, on-accent, danger + font-sans / font-mono +
+ * rounded-sm / rounded-md + text-xs … text-3xl. Do not rename those.
+ */
+@theme {
+  --color-*: initial;
+  --color-white: #ffffff;
+  --color-bg: #fafbfc;
+  --color-surface: #ffffff;
+  --color-sunken: #f4f6f8;
+  --color-line: #e4e7ec;
+  --color-line-strong: #cbd1d9;
+  --color-muted: #5a6270; /* 5.9:1 on bg */
+  --color-ink: #0f1216; /* 18:1 on bg */
+  --color-accent: #a85507; /* deep amber. 5.3:1 under white text, 5.1:1 on bg */
+  --color-accent-soft: #fdf4e4;
+  --color-accent-line: #efcf9d;
+  --color-honey: #e8a23a; /* decorative only, never text */
+  --color-cobalt: #2343d9;
+  --color-cobalt-soft: #eef1fe;
+  --color-ok: #18794a;
+  --color-ok-soft: #e7f5ed;
+  --color-danger: #b42318;
+  --color-danger-soft: #fdecea;
+  --color-night: #0b0c0f;
+
+  /* Kit aliases */
+  --color-fg: var(--color-ink);
+  --color-on-accent: #ffffff;
+
+  --radius-*: initial;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+  --radius-2xl: 28px;
+  --radius-full: 999px;
+
+  --text-*: initial;
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.25rem;
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.75rem;
+  --text-xl--line-height: 2.25rem;
+  --text-2xl: 2.5rem;
+  --text-2xl--line-height: 2.75rem;
+  --text-3xl: 3.5rem;
+  --text-3xl--line-height: 3.75rem;
+
+  --shadow-*: initial;
+  --shadow-card: 0 1px 2px rgb(15 18 22 / 0.04), 0 4px 16px -4px rgb(15 18 22 / 0.06);
+  --shadow-float:
+    0 1px 1px rgb(15 18 22 / 0.05), 0 10px 24px -8px rgb(15 18 22 / 0.14), 0 36px 72px -28px rgb(15 18 22 / 0.28);
+}
+
+/* One vertical rhythm for every page band. Bands stack, so they pad the top only. */
+@utility section-t {
+  padding-top: 6rem;
+  @media (min-width: 768px) {
+    padding-top: 9rem;
+  }
+}
+
+@theme inline {
+  --font-display: var(--font-newsreader), "Iowan Old Style", Georgia, serif;
+  --font-sans: var(--font-host-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SFMono-Regular", monospace;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 5rem;
+  }
+
+  *,
+  ::before,
+  ::after {
+    border-color: var(--color-line);
+  }
+
+  body {
+    background: var(--color-bg);
+    color: var(--color-ink);
+  }
+
+  p,
+  li,
+  dd,
+  figcaption {
+    text-wrap: pretty;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-honey) 35%, transparent);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/* ---------- Landing primitives ---------- */
+
+/* Serif display. Upright, never italic. */
+.display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-optical-sizing: auto;
+  letter-spacing: -0.035em;
+  line-height: 1.02;
+  text-wrap: balance;
+}
+
+/* Mono micro-label above section titles. */
+.micro {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1rem;
+  letter-spacing: 0.01em;
+  color: var(--color-muted);
+}
+
+/* A white product card floating on an image panel. */
+.ui-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-float);
+  outline: 1px solid rgb(15 18 22 / 0.06);
+  outline-offset: -1px;
+}
+
+/* ---------- Panel backdrops (code-drawn, no photos) ---------- */
+
+.panel {
+  background-color: var(--color-sunken);
+  outline: 1px solid var(--color-line);
+  outline-offset: -1px;
+}
+/* Fine pattern layer, faded toward the edges so cards sit on calm ground. */
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  mask-image: radial-gradient(ellipse 80% 75% at 50% 45%, black 30%, transparent 85%);
+}
+/* Soft light layer: the colour of the panel. */
+.panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+}
+
+/* Hero: one warm wash of amber light over a dot grid. Paper, not a gradient. */
+.panel-aurora::before {
+  background-image: radial-gradient(rgb(15 18 22 / 0.13) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+.panel-aurora::after {
+  background:
+    radial-gradient(70% 80% at 85% 10%, color-mix(in srgb, var(--color-honey) 28%, transparent) 0%, transparent 70%),
+    linear-gradient(180deg, #f7f8fa, #f1f3f6);
+}
+
+/* The gate: a line grid with a cobalt glow behind the held card. */
+.panel-grid::before {
+  background-image:
+    linear-gradient(to right, rgb(15 18 22 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(15 18 22 / 0.07) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+.panel-grid::after {
+  background:
+    radial-gradient(55% 70% at 20% 50%, color-mix(in srgb, var(--color-cobalt) 22%, transparent) 0%, transparent 70%),
+    var(--color-sunken);
+}
+
+/* Answers: dot grid with a warm glow. */
+.panel-dots::before {
+  background-image: radial-gradient(rgb(15 18 22 / 0.14) 1px, transparent 1px);
+  background-size: 14px 14px;
+}
+.panel-dots::after {
+  background:
+    radial-gradient(60% 60% at 80% 85%, color-mix(in srgb, var(--color-honey) 40%, transparent) 0%, transparent 70%),
+    var(--color-sunken);
+}
+
+/* Retrieval: parallel vertical channels, like ranked lanes. */
+.panel-channels::before {
+  background-image: repeating-linear-gradient(
+    to right,
+    rgb(15 18 22 / 0.09) 0 1px,
+    transparent 1px 10px
+  );
+  mask-image: linear-gradient(to bottom, transparent, black 25%, black 70%, transparent);
+}
+.panel-channels::after {
+  background:
+    radial-gradient(50% 50% at 15% 90%, color-mix(in srgb, var(--color-cobalt) 18%, transparent) 0%, transparent 70%),
+    radial-gradient(45% 50% at 90% 10%, color-mix(in srgb, var(--color-honey) 30%, transparent) 0%, transparent 70%),
+    var(--color-sunken);
+}
+
+/* Code blocks scroll sideways without a visible scrollbar. */
+.scrollbar-none {
+  scrollbar-width: none;
+}
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- Scroll-driven reveals (progressive enhancement) ---------- */
+
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .reveal {
+      animation: reveal-up linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 38%;
+    }
+  }
+}
+
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+}
+
+/* ---------- Pipeline (the signature motion) ----------
+ * Base: vertical. Stages run top to bottom, the two call lanes are narrow
+ * columns on the left. lg+: stages are 8 columns, lanes are rows below.
+ * Every position is a multiple of one stage slot, so lanes and stages
+ * stay aligned. The default (no JS, reduced motion) is the final state;
+ * the run only plays once InView sets [data-run].
+ */
+.pipe {
+  --row: 4.75rem;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1.625rem 1.625rem minmax(0, 1fr);
+}
+/* The risk gate is a pane of amber glass crossing both lanes. */
+.pipe::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: calc(5 * var(--row));
+  height: var(--row);
+  background: linear-gradient(90deg, rgb(232 162 58 / 0.2), rgb(232 162 58 / 0.07));
+  border-block: 1px solid var(--color-accent-line);
+  pointer-events: none;
+}
+.pipe-stages {
+  grid-column: 3;
+  grid-row: 1;
+  display: grid;
+  grid-auto-rows: var(--row);
+}
+.pipe-lanes {
+  display: contents;
+}
+.pipe-lane {
+  grid-row: 1;
+  position: relative;
+}
+.pipe-lane[data-lane="pass"] {
+  grid-column: 1;
+  color: var(--color-ink);
+}
+.pipe-lane[data-lane="held"] {
+  grid-column: 2;
+  color: var(--color-accent);
+}
+.pipe-call,
+.pipe-tag {
+  display: none;
+}
+.pipe-track {
+  position: absolute;
+  inset: 0;
+}
+.pipe-rail {
+  position: absolute;
+  left: calc(50% - 0.5px);
+  top: calc(var(--row) / 2);
+  bottom: calc(var(--row) / 2);
+  width: 1px;
+  background: var(--color-line-strong);
+}
+.pipe-fill {
+  --collapse: scaleY(0);
+  position: absolute;
+  left: calc(50% - 1px);
+  top: calc(var(--row) / 2);
+  width: 2px;
+  height: calc(var(--stop) * var(--row));
+  background: currentColor;
+  transform-origin: top left;
+}
+.pipe-node {
+  position: absolute;
+  left: 50%;
+  top: calc((var(--i) + 0.5) * var(--row));
+  width: 9px;
+  height: 9px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-line-strong);
+}
+.pipe-node[data-on] {
+  background: currentColor;
+  border-color: currentColor;
+}
+.pipe-mover {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: var(--row);
+  transform: translateY(calc(var(--stop) * 100%));
+}
+.pipe-packet {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 15px;
+  height: 15px;
+  translate: -50% -50%;
+  border-radius: 5px;
+  background: currentColor;
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, currentColor 16%, transparent),
+    0 4px 10px -2px color-mix(in srgb, currentColor 45%, transparent);
+}
+
+@media (min-width: 64rem) {
+  .pipe {
+    display: block;
+  }
+  .pipe::before {
+    top: 0;
+    bottom: 0;
+    left: 62.5%;
+    right: auto;
+    width: 12.5%;
+    height: auto;
+    background: linear-gradient(180deg, rgb(232 162 58 / 0.06), rgb(232 162 58 / 0.22));
+    border-block: 0;
+    border-inline: 1px solid var(--color-accent-line);
+  }
+  .pipe-stages {
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    grid-auto-rows: auto;
+  }
+  .pipe-lanes {
+    display: block;
+    position: relative;
+  }
+  .pipe-lane[data-lane] {
+    padding: 1.25rem 0 2.75rem;
+  }
+  .pipe-call {
+    display: block;
+    padding-left: 1.25rem;
+    margin-bottom: 0.875rem;
+  }
+  .pipe-track {
+    position: relative;
+    inset: auto;
+    height: 16px;
+  }
+  .pipe-rail {
+    left: 6.25%;
+    right: 6.25%;
+    top: calc(50% - 0.5px);
+    bottom: auto;
+    width: auto;
+    height: 1px;
+  }
+  .pipe-fill {
+    --collapse: scaleX(0);
+    left: 6.25%;
+    top: calc(50% - 1px);
+    width: calc(var(--stop) * 12.5%);
+    height: 2px;
+  }
+  .pipe-node {
+    left: calc((var(--i) + 0.5) * 12.5%);
+    top: 50%;
+  }
+  .pipe-mover {
+    right: auto;
+    bottom: 0;
+    width: 12.5%;
+    height: auto;
+    transform: translateX(calc(var(--stop) * 100%));
+  }
+  .pipe-tag {
+    display: block;
+    position: absolute;
+    top: 26px;
+    left: calc((var(--stop) + 0.5) * 12.5%);
+    translate: -50% 0;
+    white-space: nowrap;
+  }
+}
+
+@media (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  .pipe-run {
+    --hop: 360ms;
+    /* The held call leaves once the passing call has reached Audit, so
+       HELD FOR APPROVAL is the last beat. */
+    --held-lead: calc(7 * var(--hop) + 500ms);
+  }
+  .pipe-run .pipe-lane[data-lane="pass"] {
+    --lead: 200ms;
+  }
+  .pipe-run .pipe-lane[data-lane="held"] {
+    --lead: var(--held-lead);
+  }
+
+  .pipe-run:not([data-run]) .pipe-mover {
+    transform: none;
+  }
+  .pipe-run:not([data-run]) .pipe-fill {
+    transform: var(--collapse);
+  }
+  .pipe-run:not([data-run]) .pipe-node[data-on] {
+    background: var(--color-bg);
+    border-color: var(--color-line-strong);
+  }
+  .pipe-run:not([data-run]) .pipe-tag {
+    opacity: 0;
+  }
+
+  .pipe-run[data-run] .pipe-mover {
+    animation: pipe-travel calc(var(--stop) * var(--hop)) linear var(--lead) both;
+  }
+  .pipe-run[data-run] .pipe-fill {
+    animation: pipe-grow calc(var(--stop) * var(--hop)) linear var(--lead) both;
+  }
+  .pipe-run[data-run] .pipe-node[data-on] {
+    animation: pipe-node-on 160ms ease-out calc(var(--lead) + var(--i) * var(--hop)) both;
+  }
+  .pipe-run[data-run] .pipe-tag {
+    animation: pipe-tag-in 320ms cubic-bezier(0.2, 0.8, 0.2, 1) calc(var(--lead) + var(--stop) * var(--hop) + 80ms) both;
+  }
+  .pipe-run[data-run] .pipe-lane[data-lane="held"] .pipe-packet {
+    animation: pipe-stop 900ms ease-out calc(var(--lead) + var(--stop) * var(--hop)) both;
+  }
+}
+
+/* `to` is omitted so each keyframe ends at the element's resting style. */
+@keyframes pipe-travel {
+  from {
+    transform: none;
+  }
+}
+@keyframes pipe-grow {
+  from {
+    transform: var(--collapse);
+  }
+}
+@keyframes pipe-node-on {
+  from {
+    background: var(--color-bg);
+    border-color: var(--color-line-strong);
+  }
+}
+@keyframes pipe-tag-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+@keyframes pipe-stop {
+  from {
+    box-shadow:
+      0 0 0 0 color-mix(in srgb, currentColor 60%, transparent),
+      0 4px 10px -2px color-mix(in srgb, currentColor 45%, transparent);
+  }
+  60% {
+    box-shadow:
+      0 0 0 12px color-mix(in srgb, currentColor 0%, transparent),
+      0 4px 10px -2px color-mix(in srgb, currentColor 45%, transparent);
+  }
+}
