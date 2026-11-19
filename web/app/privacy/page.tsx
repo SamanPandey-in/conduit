@@ -24,7 +24,8 @@ export default function PrivacyPage() {
         <li>
           <strong>Account information.</strong> If you sign in with Google: your name, email address, profile picture
           and Google account ID. If you sign in with GitHub: your account ID, username, name, email address and
-          avatar. There are no passwords; we don&apos;t offer email and password sign-in.
+          avatar. If you sign up with email: your name, email address and a password. We store the password only as a
+          one-way hash (scrypt), never in readable form, and we record when you confirmed your email address.
         </li>
         <li>
           <strong>Demo sessions.</strong> &ldquo;Continue as demo&rdquo; creates a temporary account with a random ID and
@@ -61,8 +62,8 @@ export default function PrivacyPage() {
           page can&apos;t read it.
         </li>
         <li>
-          <strong>Last sign-in method</strong> (functional). Remembers whether you last used Google or GitHub so the
-          sign-in page can point to it. Expires after 30 days.
+          <strong>Last sign-in method</strong> (functional). Remembers whether you last used Google, GitHub or email
+          so the sign-in page can point to it. Expires after 30 days.
         </li>
       </ul>
       <p>Agents don&apos;t use cookies; they authenticate with their own tokens. If we ever add non-essential cookies, we&apos;ll ask for your consent first.</p>
@@ -79,6 +80,10 @@ export default function PrivacyPage() {
         <li>
           <strong>Google and GitHub</strong> handle sign-in when you choose them. We receive only the profile
           information listed above.
+        </li>
+        <li>
+          <strong>Resend</strong> delivers account emails: address confirmation, password reset links and security
+          notices. It receives your email address and the message, nothing else.
         </li>
       </ul>
       <p>

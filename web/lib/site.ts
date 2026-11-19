@@ -22,7 +22,7 @@ export const site = {
   },
   author: { name: "Saman Pandey", url: "https://github.com/SamanPandey-in" },
   // Bump when /privacy or /terms change materially (ISO date).
-  legal: { updated: "2026-11-23", email: "conduit@samanp.xyz" },
+  legal: { updated: "2026-11-24", email: "conduit@samanp.xyz" },
   mcp: {
     // The gateway endpoint ships Day 5; until then this documents the shape.
     url: `${origin}/mcp`,

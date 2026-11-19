@@ -4,14 +4,21 @@ import { betterAuth } from "better-auth";
 import { nextCookies } from "better-auth/next-js";
 import { anonymous, jwt, lastLoginMethod } from "better-auth/plugins";
 
+import {
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  RESET_PASSWORD_EXPIRES_IN,
+  VERIFY_EMAIL_EXPIRES_IN,
+} from "@/lib/auth-policy";
 import { db } from "@/lib/db";
+import { actionEmail, sendEmail } from "@/lib/email";
 import { product } from "@/lib/product";
 
 const baseURL = requiredEnv("BETTER_AUTH_URL");
 
 /**
  * Social providers are enabled only when their credentials exist, so local dev
- * works with just "Continue as demo" before any OAuth app is registered.
+ * works with email + password and "Continue as demo" before any OAuth app is registered.
  */
 const socialProviders = {
   ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
@@ -48,6 +55,75 @@ export const auth = betterAuth({
   database: db,
   socialProviders,
 
+  emailAndPassword: {
+    enabled: true,
+    // No session until the email is confirmed. This also turns on Better Auth's
+    // enumeration protection: signing up with a taken email returns the same
+    // response as a new one, and the real owner gets a notice instead.
+    requireEmailVerification: true,
+    minPasswordLength: PASSWORD_MIN_LENGTH,
+    maxPasswordLength: PASSWORD_MAX_LENGTH,
+    resetPasswordTokenExpiresIn: RESET_PASSWORD_EXPIRES_IN,
+    // A reset means the old password may be known to someone else: end every session.
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: async ({ user, url }) => {
+      await sendEmail(
+        actionEmail(user.email, {
+          appName: product.name,
+          subject: `Reset your ${product.name} password`,
+          intro: `Someone asked to reset the password for your ${product.name} account. The link works once and expires in 30 minutes.`,
+          action: "Choose a new password",
+          url,
+          outro: "If you didn't ask for this, ignore this email. Your password stays the same.",
+        }),
+      );
+    },
+    onPasswordReset: async ({ user }) => {
+      await sendEmail(
+        actionEmail(user.email, {
+          appName: product.name,
+          subject: `Your ${product.name} password was changed`,
+          intro: `The password for your ${product.name} account was just changed, and every signed-in device was signed out.`,
+          action: "Sign in",
+          url: `${baseURL}/login`,
+          outro: `If this wasn't you, reset your password now from the sign-in page and reply to this email.`,
+        }),
+      );
+    },
+    onExistingUserSignUp: async ({ user }) => {
+      await sendEmail(
+        actionEmail(user.email, {
+          appName: product.name,
+          subject: `Sign-up attempt for your ${product.name} account`,
+          intro: `Someone tried to create a ${product.name} account with this email, which already has one. Nothing changed.`,
+          action: "Sign in",
+          url: `${baseURL}/login`,
+          outro: "If it was you, sign in instead. If you've forgotten your password, reset it from the sign-in page.",
+        }),
+      );
+    },
+  },
+
+  emailVerification: {
+    sendOnSignUp: true,
+    // An unverified user who signs in (with the right password) gets a fresh link.
+    sendOnSignIn: true,
+    autoSignInAfterVerification: true,
+    expiresIn: VERIFY_EMAIL_EXPIRES_IN,
+    sendVerificationEmail: async ({ user, url }) => {
+      await sendEmail(
+        actionEmail(user.email, {
+          appName: product.name,
+          subject: `Confirm your email for ${product.name}`,
+          intro: `Confirm this address to finish creating your ${product.name} account. The link expires in 24 hours.`,
+          action: "Confirm email",
+          url,
+          outro: "If you didn't create an account, ignore this email and nothing will happen.",
+        }),
+      );
+    },
+  },
+
   user: {
     additionalFields: {
       // Server-owned (`input: false`): a client can never set its own role or
@@ -59,7 +135,9 @@ export const auth = betterAuth({
   },
 
   account: {
-    // ADR-001: link accounts on a verified email from a trusted provider.
+    // ADR-001: link accounts on a verified email from a trusted provider. Better Auth
+    // also requires the local user's email to be verified first (requireLocalEmailVerified,
+    // on by default), so an unconfirmed password sign-up can't capture a Google/GitHub login.
     accountLinking: { enabled: true, trustedProviders: ["google", "github"] },
   },
 
@@ -101,6 +179,12 @@ export const auth = betterAuth({
       // The public demo spends real money: throttle demo sign-ins per IP.
       "/sign-in/anonymous": { window: 60 * 10, max: 3 },
       "/sign-in/social": { window: 60, max: 10 },
+      // Password guessing and email-sending endpoints get tight per-IP limits.
+      "/sign-in/email": { window: 60, max: 5 },
+      "/sign-up/email": { window: 60 * 10, max: 5 },
+      "/request-password-reset": { window: 60 * 10, max: 3 },
+      "/send-verification-email": { window: 60 * 10, max: 3 },
+      "/reset-password": { window: 60 * 10, max: 10 },
     },
   },
 
