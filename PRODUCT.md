@@ -22,10 +22,12 @@ Conduit is a governed MCP gateway: cited retrieval, scoped tools, approvals and 
 
 Agents get data through one gateway where every call passes the same pipeline (authenticate, tenant scope, grant check, argument validation, rate limit, risk gate, execute, audit). High-risk calls stop at the risk gate as `PENDING_APPROVAL` and an admin sees the exact arguments.
 
+Conduit is **not an agent harness**: it never runs a model loop. It is a **governed tool gateway**, the controlled layer that harnesses (Tracebase, Claude, Cursor) call for tools and data. Its eval suites test it; they are not what it is.
+
 ## Operating Context
 
 - Demo tenant `acme` with a demo corpus; adversary tenant `globex` with a `GLOBEX-CANARY` string used in leakage tests.
-- Stack: FastAPI, Postgres + pgvector + FTS (RRF fusion), Redis, Vertex AI, MCP over Streamable HTTP, Cloud Run.
+- Stack: Go gateway (MCP over Streamable HTTP, eight-stage pipeline, admin API, machine auth, query-time retrieval), Python ingestion worker (PyMuPDF, chunking, Vertex AI embeddings), Postgres + pgvector + FTS (RRF fusion), Redis, Cloud Run. See ADR-002 and `docs/GO-GATEWAY-PLAN.md`.
 - Tools: `search_documents`, `get_passage`, `lookup_user`, high-risk `reset_password` on a mock ticket service.
 - Error codes: `DENIED`, `PENDING_APPROVAL`, `RATE_LIMITED`, `INVALID_ARGS`.
 
